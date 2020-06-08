@@ -35,13 +35,18 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  let newShortUrl = generateRandomString();
+  res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
+  urlDatabase[newShortUrl] = `http://` + req.body.longURL;
+  console.log(JSON.stringify(urlDatabase));
 });
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
+//Update your express server so that the shortURL-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
