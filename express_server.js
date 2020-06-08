@@ -42,7 +42,7 @@ app.post("/urls", (req, res) => {
 
 
   // Update your express server so that when it receives a POST request to / urls it responds with a redirection to / urls /: shortURL, where shortURL is the random string we generated.
-  res.redirect("/urls/" + newShortUrl);
+  res.redirect("/u/" + newShortUrl);
 });
 
 app.get("/urls", (req, res) => {
@@ -51,10 +51,13 @@ app.get("/urls", (req, res) => {
 });
 
 
-app.get("/urls/:shortURL", (req, res) => {
+app.get("/u/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_show", templateVars);
+  //res.render("urls_show", templateVars);
   console.log("UM TEST");
+  res.redirect(templateVars.longURL);
+  //Redirect any request to "/u/:shortURL" to its longURL
+
 });
 
 app.get("/urls.json", (req, res) => {
