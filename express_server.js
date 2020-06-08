@@ -36,9 +36,13 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   let newShortUrl = generateRandomString();
-  res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
+  //res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
   urlDatabase[newShortUrl] = `http://` + req.body.longURL;
   console.log(JSON.stringify(urlDatabase));
+
+
+  // Update your express server so that when it receives a POST request to / urls it responds with a redirection to / urls /: shortURL, where shortURL is the random string we generated.
+  res.redirect("/urls/" + newShortUrl);
 });
 
 app.get("/urls", (req, res) => {
@@ -46,11 +50,11 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-//Update your express server so that the shortURL-longURL key-value pair are saved to the urlDatabase when it receives a POST request to /urls
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
+  console.log("UM TEST");
 });
 
 app.get("/urls.json", (req, res) => {
