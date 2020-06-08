@@ -7,8 +7,14 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//ENDPOINT
 app.get("/", (req, res) => {
   res.send("Hello!");
+});
+
+//ENDPOINT
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
