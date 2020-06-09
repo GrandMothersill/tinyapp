@@ -9,7 +9,22 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <form action="/login" method="POST">
+          <input type="test" name="username" id="username" placeholder="username">
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
       </div>
     </div>
   </nav>
 </header>
+
+
+
+<!-- 
+In the _header.ejs partial of your app, create a <form> that POSTs to /login.
+  The form should contain:
+  
+  a single text input with name="username"
+  a submit button to submit the form
+  Users will type in any username into this form in order to "sign in" for now.
+  Since the POST route does not exist yet, we expect that submission of the form will result in a server error. -->
