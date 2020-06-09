@@ -1,7 +1,10 @@
 const express = require("express"); // <<----- and this
 const app = express(); // <<------------------ REMEMBER THIS
 const PORT = 8080; // default port 8080
+var morgan = require('morgan');
 
+
+app.use(morgan('combined'));
 app.set("view engine", "ejs")
 
 const urlDatabase = {
@@ -34,11 +37,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  //console.log(req.body);  // Log the POST request body to the console
   let newShortUrl = generateRandomString();
   //res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
   urlDatabase[newShortUrl] = `http://` + req.body.longURL;
-  console.log(JSON.stringify(urlDatabase));
+  //console.log(JSON.stringify(urlDatabase));
 
 
   // Update your express server so that when it receives a POST request to / urls it responds with a redirection to / urls /: shortURL, where shortURL is the random string we generated.
@@ -54,7 +57,7 @@ app.get("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   //res.render("urls_show", templateVars);
-  console.log("UM TEST");
+  //console.log("UM TEST");
   res.redirect(templateVars.longURL);
   //Redirect any request to "/u/:shortURL" to its longURL
 
