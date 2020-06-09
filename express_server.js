@@ -27,19 +27,22 @@ generateRandomString();
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { username: req.cookies["username"] }
+  res.render("urls_new", templateVars);
 
   console.log(req.body);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], }
   delete urlDatabase[templateVars.shortURL]
 
   res.redirect("/urls");
@@ -57,7 +60,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] }
   res.render("urls_show", templateVars);
 });
 
@@ -75,13 +78,14 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
+  // ADD TO OTHER ROUTES
 });
 
 
 app.get("/u/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   //res.render("urls_show", templateVars);
   //console.log("UM TEST");
   res.redirect(templateVars.longURL);
