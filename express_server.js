@@ -32,6 +32,11 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+
+  console.log(req.body);
+});
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
@@ -41,9 +46,21 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+app.post("/urls/:shortURL", (req, res) => {
+  let shortURL = req.params.shortURL;
+  let longURL = req.body.newURL;
+  urlDatabase[shortURL] = longURL;
+  res.redirect("/urls");
 });
+
+//Add a POST route that updates a URL resource; POST /urls/:id
+
+
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
+  res.render("urls_show", templateVars);
+});
+
 
 app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
