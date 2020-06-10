@@ -11,8 +11,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -29,6 +27,15 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
+};
+
+const emailLookup = function(email) {
+  for (const user in users) {
+    if (email === users[user].email) {
+      return true;
+    }
+  }
+  return false;
 };
 
 function addNewUser(email, password, userId) {
@@ -142,16 +149,23 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars)
 });
 
+
 app.post("/register", (req, res) => {
   let email = req.body.email
   let password = req.body.password
-  let newID = generateRandomString()
-  addNewUser(email, password, newID)
+  if (email === '' || password === '') {
+    res.status(400).send('Both fields must be filled-in!')
+  } else if (emailLookup(email)) {
+    res.status(400).send('That email is already associated with an account. Please try again with a new email address.')
+  } else {
+    let newID = generateRandomString()
+    addNewUser(email, password, newID)
+    res.cookie("user_id", newID);
+    res.redirect("/urls")
 
-  console.log(users)
-  res.cookie("user_id", newID);
-  res.redirect("/urls")
+  }
 });
+
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
