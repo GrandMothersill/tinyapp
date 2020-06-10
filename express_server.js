@@ -37,8 +37,6 @@ app.get("/", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["username"] }
   res.render("urls_new", templateVars);
-
-  console.log(req.body);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -46,7 +44,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[templateVars.shortURL]
 
   res.redirect("/urls");
-
 });
 
 app.post("/urls/:shortURL", (req, res) => {
@@ -55,8 +52,6 @@ app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls");
 });
-
-//Add a POST route that updates a URL resource; POST /urls/:id
 
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -109,6 +104,11 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username");
   // Implement the /logout endpoint so that it clears the username cookie and redirects the user back to the /urls page.
   res.redirect("/urls")
+});
+
+app.get("/register", (req, res) => {
+  let templateVars = { username: req.cookies["username"] }
+  res.render("register", templateVars)
 });
 
 app.get("/hello", (req, res) => {
