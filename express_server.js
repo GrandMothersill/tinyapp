@@ -32,7 +32,7 @@ const users = {
 const emailLookup = function(email) {
   for (const user in users) {
     if (email === users[user].email) {
-      return true;
+      return users[user];
     }
   }
   return false;
@@ -99,9 +99,6 @@ app.post("/urls", (req, res) => {
   //res.send(newShortUrl);         // Respond with 'Ok' (we will replace this)
   urlDatabase[newShortUrl] = `http://` + req.body.longURL;
   //console.log(JSON.stringify(urlDatabase));
-
-
-  // Update your express server so that when it receives a POST request to / urls it responds with a redirection to / urls /: shortURL, where shortURL is the random string we generated.
   res.redirect("/u/" + newShortUrl);
 });
 
@@ -130,15 +127,23 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  let username = req.body.username;
-  //console.log(username);
-  res.cookie("username", username);
-  res.redirect("/urls")
+  let email = req.body.email
+  let password = req.body.password
+  let id = req.body
+  let x = emailLookup(email);
+  if (!emailLookup(email)) {
+    res.status(403).send('There is no account associated with that email.');
+  } else if (password !== x.password) {
+    res.status(403).send('Incorrect password, shoddy haxx myfren.');
+  } else if (password === x.password) {
+    console.log("GRAHAM IT WORKED " + x.id);
+    res.cookie("user_id", x.id)
+    res.redirect("/urls")
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  // Implement the /logout endpoint so that it clears the username cookie and redirects the user back to the /urls page.
+  res.clearCookie("user_id");
   res.redirect("/urls")
 });
 
@@ -164,6 +169,13 @@ app.post("/register", (req, res) => {
     res.redirect("/urls")
 
   }
+});
+
+app.get("/login", (req, res) => {
+  const userId = req.cookies['user_id'];
+  const currentUser = users[userId];
+  let templateVars = { user: currentUser };
+  res.render("login", templateVars)
 });
 
 
