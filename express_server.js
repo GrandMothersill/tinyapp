@@ -11,6 +11,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+const bcrypt = require('bcrypt');
+
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -166,13 +168,13 @@ app.get("/urls.json", (req, res) => {
 app.post("/login", (req, res) => {
   let email = req.body.email
   let password = req.body.password
-  let id = req.body
+  //let id = req.body
   let x = emailLookup(email);
   if (!emailLookup(email)) {
     res.status(403).send('There is no account associated with that email.');
-  } else if (password !== x.password) {
+  } else if (/*password !== x.password*/!bcrypt.compareSync(password, x.password)) {
     res.status(403).send('Incorrect password, shoddy haxx myfren.');
-  } else if (password === x.password) {
+  } else if (/*password === x.password */bcrypt.compareSync(password, x.password)) {
     console.log("GRAHAM IT WORKED " + x.id);
     res.cookie("user_id", x.id)
     res.redirect("/urls")
@@ -195,13 +197,14 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   let email = req.body.email
   let password = req.body.password
+  let hashedPassword = bcrypt.hashSync(password, 10);
   if (email === '' || password === '') {
     res.status(400).send('Both fields must be filled-in!')
   } else if (emailLookup(email)) {
     res.status(400).send('That email is already associated with an account. Please try again with a new email address.')
   } else {
     let newID = generateRandomString()
-    addNewUser(email, password, newID)
+    addNewUser(email, hashedPassword, newID)
     res.cookie("user_id", newID);
     res.redirect("/urls")
 
