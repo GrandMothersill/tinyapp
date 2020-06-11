@@ -11,25 +11,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
-  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
+  b2xVn2: { longURL: "http://www.lighthouselabs.ca", userID: "ad8r4l" },
 };
 
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
+  "aJ48lW": {
+    id: "aJ48lW",
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
-  "user2RandomID": {
-    id: "user2RandomID",
+  "ad8r4l": {
+    id: "ad8r4l",
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
@@ -42,6 +38,17 @@ const emailLookup = function(email) {
     }
   }
   return false;
+};
+
+const urlsForUser = function(id) {
+  let idURLs = {};
+
+  for (const key in urlDatabase) {
+    if (urlDatabase[key].userID === id) {
+      idURLs[key] = urlDatabase[key];
+    }
+  };
+  return idURLs;
 };
 
 function addNewUser(email, password, userId) {
@@ -76,27 +83,43 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, }
-  delete urlDatabase[templateVars.shortURL]
 
-  res.redirect("/urls");
+app.post("/urls/:shortURL/delete", (req, res) => {
+  let shortURL = req.params.shortURL
+  const userId = req.cookies['user_id']
+  const currentUser = users[userId];
+  if (!currentUser) {
+    res.send("You don't even go here...........................")
+  } else if (urlDatabase[shortURL].userID !== currentUser.id) {
+    res.send("Hey! You can't be here! Go log in, you ruffian!")
+  } else {
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, }
+    delete urlDatabase[templateVars.shortURL]
+    res.redirect("/urls");
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  let longURL = urlDatabase[req.params.shortURL].longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
+  const userId = req.cookies['user_id']
+  const currentUser = users[userId];
+  if (!currentUser) {
+    res.send("You don't even go here...........................")
+  } else if (urlDatabase[shortURL].userID !== currentUser.id) {
+    res.send("Hey! You can't be here! Go log in, you ruffian!")
+  } else {
+    urlDatabase[shortURL].longURL = req.body.newURL;
+    res.redirect("/urls");
+  }
 });
+
 
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.cookies['user_id']
   const currentUser = users[userId];
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: currentUser }
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser }
   res.render("urls_show", templateVars);
 });
-
 
 app.post("/urls", (req, res) => {
   const userId = req.cookies['user_id']
@@ -115,11 +138,13 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.cookies['user_id']
   const currentUser = users[userId];
-  let templateVars = { urls: urlDatabase, user: currentUser };
+
+  let usersURLs = urlsForUser(userId);
+
+  let templateVars = { urls: usersURLs, user: currentUser };
   res.render("urls_index", templateVars);
   // ADD TO OTHER ROUTES
 });
-
 
 app.get("/u/:shortURL", (req, res) => {
   // YOU BETTA NOT CHANGE ME
@@ -198,3 +223,13 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+
+
+
+// This also means that the /urls page will need to filter the entire list in the urlDatabase by comparing the userID with the logged-in user's ID. This filtering process should happen before the data is sent to the template for rendering.
+
+// Similarly, this also means that the /urls/:id page should display a message or prompt if the user is not logged in, or if the URL with the matching :id does not belong to them.
+
+// Create a function named urlsForUser(id) which returns the URLs where the userID is equal to the id of the currently logged-in user.
