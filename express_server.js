@@ -16,7 +16,7 @@ app.use(cookieSession({
   keys: ["sAEIutSODFkASDDfmQr4e1934190qwmA"]
 }));
 
-///////////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////
 
 // Redirects to /urls if logged-in, redirects to /login if not
 app.get("/", (req, res) => {
@@ -69,7 +69,11 @@ app.post("/urls/:shortURL", (req, res) => {
   } else if (urlDatabase[shortURL].userID !== currentUser.id) {
     res.send("Hey! You can't be here! You don't own this shortURL!");
   } else {
-    urlDatabase[shortURL].longURL = req.body.newURL;
+    let newURL = req.body.newURL;
+    if (!newURL.startsWith('http')) {
+      newURL = 'http://' + newURL;
+    }
+    urlDatabase[shortURL].longURL = newURL;
     res.redirect("/urls");
   }
 });
@@ -96,10 +100,14 @@ app.post("/urls", (req, res) => {
   const currentUser = users[userId];
   if (currentUser) {
     let newShortUrl = generateRandomString();
-    urlDatabase[newShortUrl] = { longURL: `http://` + req.body.longURL, userID: userId };
+    let newURL = req.body.longURL;
+    if (!newURL.startsWith('http')) {
+      newURL = 'http://' + newURL;
+    }
+    urlDatabase[newShortUrl] = { longURL: newURL, userID: userId };
     res.redirect("/urls/" + newShortUrl);
   } else {
-    res.send("You must be logged in to generate a new shortURL.")
+    res.send("You must be logged in to generate a new shortURL.");
   }
 });
 
@@ -121,11 +129,12 @@ app.get("/urls.json", (req, res) => {
 // Redirect to shortURL's associated longURL
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.send("That is not a valid shortURL. Who told you it was? They lied to you.")
+    res.send("That is not a valid shortURL. Who told you it was? They lied to you.");
   } else {
     const userId = req.session.cookieUserId;
     const currentUser = users[userId];
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: currentUser };
+    let shortURL = req.params.shortURL; // THIS IS WRONG. This stored a longURL on any pass that is not the first.
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[shortURL].longURL, user: currentUser };
     res.redirect(templateVars.longURL);
   }
 });
@@ -135,7 +144,7 @@ app.get("/login", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (currentUser) {
-    res.redirect("/urls")
+    res.redirect("/urls");
   } else {
     let templateVars = { user: currentUser };
     res.render("login", templateVars);
@@ -171,7 +180,7 @@ app.get("/register", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (currentUser) {
-    res.redirect("/urls")
+    res.redirect("/urls");
   } else {
     let templateVars = { user: currentUser };
     res.render("register", templateVars);
