@@ -11,21 +11,15 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-
     <div class="row justify-content-end">
       <div class="collapse navbar-collapse">
         <div class="navbar-nav">
-
           <% if(user){%>
-          <!-- AS"PFGINHSD"OIFNSD"LNFSD"LJFNSD"LJFNSDF -->
-
-
           <p style="margin: 10px;">Logged in as: <%=user['email']%>
           </p>
           <form action="/logout" method="POST">
             <button type='submit' class="btn btn-outline-secondary">Logout</button>
           </form>
-
           <% } else{ %>
           <form action="/login" method="GET">
             <button style="margin: 10px;" type="submit" class="btn btn-outline-secondary">Login</button>
