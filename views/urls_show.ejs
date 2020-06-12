@@ -27,6 +27,14 @@
     </div>
     <div class="card-footer text-muted"></div>
   </div>
+  <% } else if (!longURL) { %>
+  <div class="card text-center">
+    <div class="card-header"></div>
+    <div class="card-body">
+      <h5 class="card-title">Url does not exist.</h5>
+    </div>
+    <div class="card-footer text-muted"></div>
+  </div>
   <% } else { %>
   <div class="card text-center">
     <div class="card-header"></div>

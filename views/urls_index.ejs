@@ -20,8 +20,7 @@
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
-          <th scope="col">Created By</th>
-          <!-- <th scope="col">EDIT</th> -->
+          <th scope="col">EDIT</th>
           <th scope="col">DELETE</th>
         </tr>
       </thead>
@@ -31,9 +30,10 @@
           <td><%= url %></td>
           <td><%= urls[url].longURL %></td>
           <td>
-            <a href="/urls/<%=url%>" class="btn btn-primary">
-              EDIT
-            </a>
+            <a href="/urls/<%=url%>" class="btn btn-primary">EDIT</a>
+            <!-- I know that this button and the "Create a New
+            Short Link" button below are implemented in different ways, and it's weird. The assignment suggests, to my
+            reading, that I should show me using a link here, and a form below. I'm leaving it as is just to be safe. -->
           </td>
           <td>
             <form class="form-inline" action="/urls/<%=url%>/delete" method="POST">
@@ -54,6 +54,11 @@
     </div>
     <% } %>
   </main>
+  <div class="card-footer text-muted">
+    <form class="form-inline" action="/urls/new" method="GET">
+      <button type='submit' class="btn btn-primary">Create a New Short Link</button>
+    </form>
+  </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
     integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"

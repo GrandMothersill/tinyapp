@@ -18,17 +18,27 @@ app.use(cookieSession({
 
 ///////////////////////////////////////////////////////////////////// 
 
-//happy hello
+// Redirects to /urls if logged-in, redirects to /login if not
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const userId = req.session.cookieUserId;
+  const currentUser = users[userId];
+  if (currentUser) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // Input URL to generate and log its shortURL
 app.get("/urls/new", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
-  let templateVars = { user: currentUser };
-  res.render("urls_new", templateVars);
+  if (currentUser) {
+    let templateVars = { user: currentUser };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // Delete stored longURL/shortURL pair ONLY IF user is its owner
@@ -40,7 +50,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (!currentUser) {
     res.send("You don't even go here...........................");
   } else if (urlDatabase[shortURL].userID !== currentUser.id) {
-    res.send("Hey! You can't be here! Go log in, you ruffian!");
+    res.send("Hey! You can't be here! You don't own this shortURL!");
   } else {
     let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, };
     delete urlDatabase[templateVars.shortURL];
@@ -57,7 +67,7 @@ app.post("/urls/:shortURL", (req, res) => {
   if (!currentUser) {
     res.send("You don't even go here...........................");
   } else if (urlDatabase[shortURL].userID !== currentUser.id) {
-    res.send("Hey! You can't be here! Go log in, you ruffian!");
+    res.send("Hey! You can't be here! You don't own this shortURL!");
   } else {
     urlDatabase[shortURL].longURL = req.body.newURL;
     res.redirect("/urls");
@@ -66,11 +76,17 @@ app.post("/urls/:shortURL", (req, res) => {
 
 // Displays shortURL, longURL, potential to change longURL
 // Accessed from edit buttons on urls_index
+/* I implemented some of the funtionality of this route directly in the urls_show html file using conditionals.
+I don't know if that's something that you want to see. I know I could do it here instead, like elsewhere, but I like how the messages look in the browser.*/
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser };
-  res.render("urls_show", templateVars);
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("Url does not exist.");
+  } else {
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser };
+    res.render("urls_show", templateVars);
+  }
 });
 
 // Create new shortURL/longURL/userID object in urlDatabase ONLY IF logged-in
@@ -81,13 +97,15 @@ app.post("/urls", (req, res) => {
   if (currentUser) {
     let newShortUrl = generateRandomString();
     urlDatabase[newShortUrl] = { longURL: `http://` + req.body.longURL, userID: userId };
-    res.redirect("/u/" + newShortUrl);
+    res.redirect("/urls/" + newShortUrl);
   } else {
-    res.redirect("/login");
+    res.send("You must be logged in to generate a new shortURL.")
   }
 });
 
 // Displays all of a user's URLs
+/* I implemented some of the funtionality of this route directly in the urls_index html file using conditionals.
+I don't know if that's something that you want to see. I know I could do it here instead, like elsewhere, but I like how the messages look in the browser.*/
 app.get("/urls", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
@@ -96,16 +114,32 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// Redirect to shortURL's associated longURL
-app.get("/u/:shortURL", (req, res) => {
-  const userId = req.session.cookieUserId;
-  const currentUser = users[userId];
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: currentUser };
-  res.redirect(templateVars.longURL);
-});
-
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+// Redirect to shortURL's associated longURL
+app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.send("That is not a valid shortURL. Who told you it was? They lied to you.")
+  } else {
+    const userId = req.session.cookieUserId;
+    const currentUser = users[userId];
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: currentUser };
+    res.redirect(templateVars.longURL);
+  }
+});
+
+// Display Login page with fields
+app.get("/login", (req, res) => {
+  const userId = req.session.cookieUserId;
+  const currentUser = users[userId];
+  if (currentUser) {
+    res.redirect("/urls")
+  } else {
+    let templateVars = { user: currentUser };
+    res.render("login", templateVars);
+  }
 });
 
 // Login to account
@@ -118,7 +152,7 @@ app.post("/login", (req, res) => {
   if (!getUserByEmail(email, users)) {
     res.status(403).send('There is no account associated with that email.');
   } else if (!bcrypt.compareSync(password, hashedPass)) {
-    res.status(403).send('Incorrect password, shoddy haxx myfren.');
+    res.status(403).send('Incorrect password. Try password123.');
   } else if (bcrypt.compareSync(password, hashedPass)) {
     req.session.cookieUserId = storedUser.id;
     res.redirect("/urls");
@@ -136,8 +170,12 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
-  let templateVars = { user: currentUser };
-  res.render("register", templateVars);
+  if (currentUser) {
+    res.redirect("/urls")
+  } else {
+    let templateVars = { user: currentUser };
+    res.render("register", templateVars);
+  }
 });
 
 // Registers new account if input email and password both valid
@@ -156,14 +194,6 @@ app.post("/register", (req, res) => {
     addNewUser(email, hashedPassword, newId, users);
     res.redirect("/urls");
   }
-});
-
-// Display Login page with fields
-app.get("/login", (req, res) => {
-  const userId = req.session.cookieUserId;
-  const currentUser = users[userId];
-  let templateVars = { user: currentUser };
-  res.render("login", templateVars);
 });
 
 // Happy Hello
