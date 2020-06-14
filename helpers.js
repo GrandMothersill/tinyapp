@@ -32,7 +32,7 @@ const addNewUser = function(email, password, userId, database) {
 };
 
 const generateRandomString = function() {
-  let characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let string = '';
   for (let i = 0; i < 6; i++) {
     let ranNumb = Math.floor(Math.random() * characters.length);

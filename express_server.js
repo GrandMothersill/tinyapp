@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
-let cookieSession = require('cookie-session');
+const cookieSession = require('cookie-session');
 app.set('trust proxy', 1); // trust first proxy
 app.use(cookieSession({
   name: 'session',
@@ -34,7 +34,7 @@ app.get("/urls/new", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (currentUser) {
-    let templateVars = { user: currentUser };
+    const templateVars = { user: currentUser };
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -44,7 +44,7 @@ app.get("/urls/new", (req, res) => {
 // Delete stored longURL/shortURL pair ONLY IF user is its owner
 // Accessed via delete buttons in urls_index
 app.post("/urls/:shortURL/delete", (req, res) => {
-  let shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (!currentUser) {
@@ -52,7 +52,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else if (urlDatabase[shortURL].userID !== currentUser.id) {
     res.send("Hey! You can't be here! You don't own this shortURL!");
   } else {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, };
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, };
     delete urlDatabase[templateVars.shortURL];
     res.redirect("/urls");
   }
@@ -61,7 +61,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Assigns new longURL to stored shortURL ONLY IF logged in
 // Accessed via urls_show
 app.post("/urls/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (!currentUser) {
@@ -88,7 +88,7 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.send("Url does not exist.");
   } else {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser };
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser };
     res.render("urls_show", templateVars);
   }
 });
@@ -99,7 +99,7 @@ app.post("/urls", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (currentUser) {
-    let newShortUrl = generateRandomString();
+    const newShortUrl = generateRandomString();
     let newURL = req.body.longURL;
     if (!newURL.startsWith('http')) {
       newURL = 'http://' + newURL;
@@ -117,8 +117,8 @@ I don't know if that's something that you want to see. I know I could do it here
 app.get("/urls", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
-  let usersURLs = getUserURLs(userId, urlDatabase);
-  let templateVars = { urls: usersURLs, user: currentUser };
+  const usersURLs = getUserURLs(userId, urlDatabase);
+  const templateVars = { urls: usersURLs, user: currentUser };
   res.render("urls_index", templateVars);
 });
 
@@ -133,8 +133,8 @@ app.get("/u/:shortURL", (req, res) => {
   } else {
     const userId = req.session.cookieUserId;
     const currentUser = users[userId];
-    let shortURL = req.params.shortURL; // THIS IS WRONG. This stored a longURL on any pass that is not the first.
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[shortURL].longURL, user: currentUser };
+    const shortURL = req.params.shortURL;
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[shortURL].longURL, user: currentUser };
     res.redirect(templateVars.longURL);
   }
 });
@@ -146,7 +146,7 @@ app.get("/login", (req, res) => {
   if (currentUser) {
     res.redirect("/urls");
   } else {
-    let templateVars = { user: currentUser };
+    const templateVars = { user: currentUser };
     res.render("login", templateVars);
   }
 });
@@ -154,10 +154,10 @@ app.get("/login", (req, res) => {
 // Login to account
 // Accessed via submit button on login page
 app.post("/login", (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  let storedUser = getUserByEmail(email, users);
-  let hashedPass = storedUser.password;
+  const email = req.body.email;
+  const password = req.body.password;
+  const storedUser = getUserByEmail(email, users);
+  const hashedPass = storedUser.password;
   if (!getUserByEmail(email, users)) {
     res.status(403).send('There is no account associated with that email.');
   } else if (!bcrypt.compareSync(password, hashedPass)) {
@@ -182,7 +182,7 @@ app.get("/register", (req, res) => {
   if (currentUser) {
     res.redirect("/urls");
   } else {
-    let templateVars = { user: currentUser };
+    const templateVars = { user: currentUser };
     res.render("register", templateVars);
   }
 });
@@ -190,15 +190,15 @@ app.get("/register", (req, res) => {
 // Registers new account if input email and password both valid
 // Accessed via register page
 app.post("/register", (req, res) => {
-  let email = req.body.email;
-  let password = req.body.password;
-  let hashedPassword = bcrypt.hashSync(password, 10);
+  const email = req.body.email;
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (email === '' || password === '') {
     res.status(400).send('Both fields must be filled-in!');
   } else if (getUserByEmail(email, users)) {
     res.status(400).send('That email is already associated with an account. Please try again with a new email address.');
   } else {
-    let newId = generateRandomString();
+    const newId = generateRandomString();
     req.session.cookieUserId = newId;
     addNewUser(email, hashedPassword, newId, users);
     res.redirect("/urls");
