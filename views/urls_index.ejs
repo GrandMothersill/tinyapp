@@ -31,9 +31,6 @@
           <td><%= urls[url].longURL %></td>
           <td>
             <a href="/urls/<%=url%>" class="btn btn-primary">EDIT</a>
-            <!-- I know that this button and the "Create a New
-            Short Link" button below are implemented in different ways, and it's weird. The assignment suggests, to my
-            reading, that I should show me using a link here, and a form below. I'm leaving it as is just to be safe. -->
           </td>
           <td>
             <form class="form-inline" action="/urls/<%=url%>/delete" method="POST">

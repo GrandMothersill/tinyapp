@@ -41,7 +41,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-// Delete stored longURL/shortURL pair ONLY IF user is its owner
+// Delete stored longURL/shortURL pair if user is its owner
 // Accessed via delete buttons in urls_index
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -58,8 +58,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-// Assigns new longURL to stored shortURL ONLY IF logged in
-// Accessed via urls_show
+// Assigns new longURL to stored shortURL if user logged in
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const userId = req.session.cookieUserId;
@@ -78,22 +77,21 @@ app.post("/urls/:shortURL", (req, res) => {
   }
 });
 
-// Displays shortURL, longURL, potential to change longURL
 // Accessed from edit buttons on urls_index
-/* I implemented some of the funtionality of this route directly in the urls_show html file using conditionals.
-I don't know if that's something that you want to see. I know I could do it here instead, like elsewhere, but I like how the messages look in the browser.*/
 app.get("/urls/:shortURL", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
   if (!urlDatabase[req.params.shortURL]) {
     res.send("Url does not exist.");
   } else {
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, creatorID: urlDatabase[req.params.shortURL].userID, user: currentUser };
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    const creatorID = urlDatabase[req.params.shortURL].userID;
+    const templateVars = { longURL, creatorID, shortURL: req.params.shortURL, user: currentUser };
     res.render("urls_show", templateVars);
   }
 });
 
-// Create new shortURL/longURL/userID object in urlDatabase ONLY IF logged-in
+// Create new shortURL/longURL/userID object in urlDatabase if user logged-in
 // Accessed via urls_new submit button
 app.post("/urls", (req, res) => {
   const userId = req.session.cookieUserId;
@@ -111,9 +109,6 @@ app.post("/urls", (req, res) => {
   }
 });
 
-// Displays all of a user's URLs
-/* I implemented some of the funtionality of this route directly in the urls_index html file using conditionals.
-I don't know if that's something that you want to see. I know I could do it here instead, like elsewhere, but I like how the messages look in the browser.*/
 app.get("/urls", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
@@ -139,7 +134,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-// Display Login page with fields
 app.get("/login", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
@@ -175,7 +169,6 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-// Displays registration page
 app.get("/register", (req, res) => {
   const userId = req.session.cookieUserId;
   const currentUser = users[userId];
@@ -205,12 +198,10 @@ app.post("/register", (req, res) => {
   }
 });
 
-// Happy Hello
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// Prints listening confirmation w/ port number
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
